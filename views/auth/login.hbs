@@ -9,10 +9,15 @@
 
   <div class="field" >
     <label>Password</label>
-    <input type="number" name="password"/>
+    <input type="text" name="password"/>
   </div>
 
   <div class="field submit">
     <button type="submit">Log in</button>
+    {{#if messages.length}}
+    <ul class="validation">
+      {{#each messages}}<li>{{this}}</li>{{/each}}
+    </ul>
+    {{/if}}
   </div>
 </form>

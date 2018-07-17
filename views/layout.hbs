@@ -5,6 +5,28 @@
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
+    <header>
+        {{#unless currentUser}}
+      <nav>
+        <a href="/auth/signup">Signup</a>
+        <a href="/auth/login">Login</a>
+      </nav>
+      {{/unless}}
+
+      {{#if currentUser}}
+        <p>Logged in as {{currentUser.username}}
+          <form method="post" action="/auth/logout">
+          <button>logout</button>
+          </form>
+          <a href="/auth/logout">logout</a>
+        </p>
+      {{/if}}
+    </header>
+    
     {{{body}}}
+    <footer>
+      &copy; 2099 future people
+    </footer>
+    <script src="/javascripts/main.js"></script>
   </body>
 </html>

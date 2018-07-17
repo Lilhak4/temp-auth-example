@@ -11,6 +11,7 @@ const saltRounds = 10;
 /* GET users listing. */
 router.get('/signup', (req, res, next) => {
   if (req.session.currentUser) {
+    // message please providsew username and password
     res.redirect('/');
     return;
   }
@@ -24,21 +25,30 @@ router.post('/signup', (req, res, next) => {
     return;
   }
   if (!req.body.username || !req.body.password) {
+    req.flash('message-name', 'The message content');
     res.redirect('/auth/signup');
     return;
   }
   User.findOne({username: req.body.username})
     .then((user) => {
       if (user) {
+        // message username is already taken
         return res.redirect('/auth/signup');
+      } else {
+        // message username or password incorrect
+        res.redirect('/auth/login');
       }
 
       const salt = bcrypt.genSaltSync(saltRounds);
       const hashedPassword = bcrypt.hashSync(req.body.password, salt);
-
+      // -----Add location and objects within for google maps-----
       const newUser = new User({
         username: req.body.username,
-        password: hashedPassword
+        password: hashedPassword,
+        location: {
+          type: 'Point',
+          coordinates: [(req.body.latitude), (req.body.longitude)]
+        }
       });
 
       newUser.save()
@@ -56,8 +66,10 @@ router.get('/login', (req, res, next) => {
     res.redirect('/');
     return;
   }
-
-  res.render('auth/login');
+  const data = {
+    messages: req.flash('login-error')
+  };
+  res.render('auth/login', data);
 });
 
 router.post('/login', (req, res, next) => {
@@ -66,24 +78,31 @@ router.post('/login', (req, res, next) => {
     return;
   }
   if (!req.body.username || !req.body.password) {
+    req.flash('login-error', 'please provide a username and password');
     res.redirect('/auth/login');
     return;
   }
   User.findOne({ username: req.body.username })
     .then((user) => {
-      if (user) {
-        if (bcrypt.compareSync(req.body.password, user.password)) {
-          req.session.currentUser = user;
-          res.redirect('/');
-        } else {
-          res.redirect('/auth/login');
-        }
+      if (!user) {
+        req.flash('login-error', 'username and or password are incorrect');
+        res.redirect('/auth/login');
+        return;
       }
-    });
-  // Check if user already exists
-  // If user doesn't exist, redirect to sign up
-  // If user exists check the password and log in if the password is correct
-  //
+      if (!bcrypt.compareSync(req.body.password, user.password)) {
+        req.flash('login-error', 'username and or password are incorrect');
+        res.redirect('/auth/login');
+        return;
+      }
+
+      req.session.currentUser = user;
+      res.redirect('/');
+    })
+    .catch(next);
+});
+router.post('/logout', (req, res, next) => {
+  delete req.session.currentUser;
+  res.redirect('/auth/login');
 });
 
 module.exports = router;

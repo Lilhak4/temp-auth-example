@@ -11,8 +11,16 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true
+  },
+  location: {
+    type: {
+      type: String
+    },
+    coordinates: [Number]
   }
 });
+// prepares db to use for location
+userSchema.index({ location: '2dsphere' });
 
 const User = mongoose.model('User', userSchema);
 
